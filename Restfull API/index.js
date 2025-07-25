@@ -1,6 +1,9 @@
 const express = require('express');
 const data = require('./MOCK_DATA.json');
 const app = express();
+const fs = require('fs');
+
+app.use(express.urlencoded({extended : false}));
 
 app.get("/api/users", (req, res) => {
     res.setHeader('Content-Type', 'application/json');
@@ -17,6 +20,15 @@ app.get("/api/users/:id",(req,res)=>{
     const user = data.find((user)=> user.id === id);
     res.setHeader('Content-Type','application/json');
     res.send(JSON.stringify(user,null,2));
+})
+
+app.post('/api/users',(req,res)=>{
+   const body = req.body;
+   console.log(body);
+   data.push({...body,id:data.length});
+   fs.writeFile('./MOCK_DATA.json',JSON.stringify(data),(err,data)=>{
+    return res.json({status : "Success",id:data.length});
+   })
 })
 
 app.listen(8000, () => {
