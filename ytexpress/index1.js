@@ -14,7 +14,7 @@ app.use('/welcome',(req,res,next)=>{ //applied for specific routes...
     console.log("this is middleware applied for welcome route only....");
     res.on('finish',()=>{
         console.log("end");
-    }); 
+    });  // eventListener
     next();
 });
 
