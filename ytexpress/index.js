@@ -1,59 +1,50 @@
 import express from 'express'
-import cookieParser from 'cookie-parser';
-import session from 'express-session';
-
-const app = express();
+import bcrypt from 'bcryptjs';
+import jwt  from 'jsonwebtoken';
 
 let users = [];
-app.use(cookieParser());
+const app = express();
 app.use(express.json());
-app.use(session({
-    secret : 'sample-secret',
-    resave : false,
-    saveUninitialized : false
-}))
 
 app.get('/',(req,res)=>{
-   res.send("welcome to express");
+    console.log("this is the home page...");
+    res.send("hello express");
 })
 
-app.post('/register',(req,res)=>{
+app.post('/register',async (req,res)=>{
     const {name , password} = req.body;
+    const hashedPassword = await bcrypt.hash(password,10);
     users.push({
-        name ,
-        password
-    });
-    console.log(users);
+        name,
+        password : hashedPassword
+    })
     res.send("user registered...");
 })
 
-app.post('/login',(req,res)=>{
+app.post('/login',async(req,res)=>{
     const {name , password} = req.body;
-    const user = users.find(u => u.name === name);
-    if(!user || user.password !== password){
-        return res.send("invalid username or password");
+    const user = users.find((u)=> u.name === name);
+    if(!name || (!await bcrypt.compare(password,user.password))){
+        return res.send("invalid credentials...");
     }
-    req.session.user = user;
-    res.send("login successful");
+    const token = jwt.sign({name},"secret#test");
+    res.json({token});
 })
 
 app.get('/dashboard',(req,res)=>{
-    if(!req.session.user){
-        return res.send("Unauthorized...");
+   try {
+     const token = req.header('Authorization');
+    const decodedToken = jwt.verify(token, "secret#test");
+    if(decodedToken.name){
+        res.send(`welcome , ${decodedToken.name}`);
+    }else{
+        res.send('access denied...');
     }
-    return res.send(`welcome ${req.session.user.name}`);
+   } catch (error) {
+    res.send(error.message);
+   }
 })
 
-app.post('/remove',(req,res)=>{
-    const username = req.session.user?.name || "John Doe";
-    req.session.destroy((err)=>{
-        if(err){
-           return res.send('error logging out');
-        }
-        res.send(`${username} logged out successfully`);
-    } );
-    
-})
 app.listen(3000,()=>{
-    console.log("listening....");
+    console.log("listening...");
 })
