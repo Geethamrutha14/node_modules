@@ -27,6 +27,11 @@ app.get('/visit',(req,res)=>{
     }
 })
 
+app.get('/remove',(req,res)=>{
+    req.session.destroy();
+    res.send("session cleared");
+})
+
 app.listen(3000,()=>{
     console.log("listening....");
 })
