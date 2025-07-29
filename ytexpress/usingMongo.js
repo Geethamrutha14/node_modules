@@ -1,11 +1,12 @@
 import express from 'express'
 import mongoose from 'mongoose'
 import { Person } from './models/person.model.js';
+import  configDotenv  from 'dotenv';
 
+configDotenv.config();
 const app = express();
-const MONGO_URI = 'mongodb+srv://geethamruthapalla4:express@cluster0.rk2jyun.mongodb.net/express'
 
-mongoose.connect(MONGO_URI)
+mongoose.connect(process.env.MONGO_URI)
 .then(()=>{
     console.log("connected successfully");
 })
